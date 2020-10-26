@@ -1,0 +1,54 @@
+#
+#  Esempio di toleration
+#
+#      tolerations:
+#        - key: isp.com/disable-monitoring
+#          operator: Exists
+#          effect: NoSchedule
+#
+#  Bloccare il pod con 
+#
+# kubectl taint nodes node01 isp.com/disable-logging='':NoExecute
+#
+# kubectl taint nodes node01 isp.com/disable-logging-
+#
+
+kind: DaemonSet
+apiVersion: apps/v1
+metadata:
+  name: exampleds
+  namespace: test-conco
+spec:
+  selector:
+    matchLabels:
+      app: hello-openshift
+  template:
+    metadata:
+      creationTimestamp: null
+      labels:
+        app: hello-openshift
+    spec:
+      containers:
+        - name: hello-openshift
+          image: openshift/hello-openshift
+          ports:
+            - containerPort: 8080
+              protocol: TCP
+          resources: {}
+          terminationMessagePath: /dev/termination-log
+          terminationMessagePolicy: File
+          imagePullPolicy: Always
+      restartPolicy: Always
+      terminationGracePeriodSeconds: 30
+      dnsPolicy: ClusterFirst
+      securityContext: {}
+      schedulerName: default-scheduler
+      tolerations:
+        - key: isp.com/disable-logging
+          operator: Exists
+          effect: NoSchedule
+  updateStrategy:
+    type: RollingUpdate
+    rollingUpdate:
+      maxUnavailable: 1
+  revisionHistoryLimit: 10
